@@ -1,0 +1,16 @@
+{
+  "users": [
+    {
+      "id": "7378",
+      "name": "Erik Riswanto Saputra",
+      "email": "erikriswantosaputra@gmail.com",
+      "bidang": "FullStack Dev"
+    },
+    {
+      "id": "0405",
+      "name": "Azamy",
+      "email": "Azamy@gmail.com",
+      "bidang": "Sofware dev"
+    }
+  ]
+}

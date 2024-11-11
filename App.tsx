@@ -1,118 +1,133 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { StyleSheet, View, Text, TextInput, Button, Image, Alert, TouchableOpacity, } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import Axios from 'axios'
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const Item = ({ name, email, bidang, onPress, onDelete }) => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.itemContainer}>
+      <TouchableOpacity onPress={onPress}>
+        <Image source={{ uri: `https://robohash.org/${name}` }} style={styles.avatars} />
+      </TouchableOpacity>
+      <View style={styles.desc}>
+        <Text style={styles.descNama}>{name}</Text>
+        <Text style={styles.descEmail}>{email}</Text>
+        <Text style={styles.descBidang}>{bidang}</Text>
+      </View>
+      <TouchableOpacity onPress={onDelete}>
+        <Text style={styles.Delete}>x</Text>
+      </TouchableOpacity>
     </View>
-  );
+  )
 }
+const App = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bidang, setBidang] = useState("");
+  const [users, setUsers] = useState([]);
+  const [button, setButton] = useState("Simpan");
+  const [selectedUser, setSelectedUser] = useState({}); 
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  useEffect(() => {
+    getData();
+  }, []);
+  // -----------------------
+  const submit = () => {
+    const data = {
+      name,
+      email,
+      bidang,
+    }
+    if (button === 'Simpan') {
+      Axios.post('http://192.168.1.10:3004/users', data)
+        .then(res => {
+          console.log('res: ', res);
+          setName("");
+          setEmail("");
+          setBidang("");
+          getData();
+        })
+    } else if (button === 'Update') {
+      Axios.put(`http://192.168.1.10:3004/users/${selectedUser.id}`, data)
+        .then(res => {
+          console.log('res Update: ', res);
+          setName("");
+          setEmail("");
+          setBidang("");
+          getData();
+          setButton("Simpan");
+        })
+    }
+  }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const getData = () => {
+    Axios.get('http://192.168.1.10:3004/users')
+      .then(res => {
+        setUsers(res.data);
+      })
+  }
+
+  const selectItem = (item) => {
+    setSelectedUser(item);
+    setName(item.name);
+    setEmail(item.email);
+    setBidang(item.bidang);
+    setButton("Update")
+  }
+
+  const deleteItem = (item) => {
+    Axios.delete(`http://192.168.1.10:3004/users/${item.id}`)
+    getData();
+  }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+    <View style={styles.container}>
+      <Text style={styles.textTitle}>Local API (Json Server)</Text>
+      <Text style={{ marginBottom: 12 }}>Masukan Jurusan Mahasiswa</Text>
+      <TextInput placeholder='Nama Lengkap' style={styles.input} value={name} onChangeText={(value) => setName(value)} />
+      <TextInput placeholder='Email' style={styles.input} value={email} onChangeText={(value) => setEmail(value)} />
+      <TextInput placeholder='Bidang' style={styles.input} value={bidang} onChangeText={(value) => setBidang(value)} />
+      <Button title={button} onPress={submit} />
+      <View style={styles.Line} />
+      {users.map(user => {
+        return (
+          <Item
+            key={user.id}
+            name={user.name}
+            email={user.email}
+            bidang={user.bidang}
+            onPress={() => selectItem(user)}
+            onDelete={() => Alert.alert(
+              'Peringatan',
+              'Anda yakin akan menghapus user ini?',
+              [
+                {
+                  text: 'Tidak',
+                  onPress: () => console.log('button tidak')
+                },
+                {
+                  text: 'Ya',
+                  onPress: () => deleteItem(user)
+                }
+              ])} />
+        )
+      })}
+    </View>
+  )
 }
+
+
+export default App
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
+  container: { padding: 20 },
+  textTitle: { textAlign: 'center', marginBottom: 20 },
+  Line: { height: 2, backgroundColor: 'black', marginVertical: 20 },
+  input: { borderWidth: 1, marginBottom: 12, borderRadius: 25, paddingHorizontal: 18 },
+  itemContainer: { flexDirection: 'row' },
+  avatars: { width: 80, height: 80, borderRadius: 100, backgroundColor: 'white' },
+  desc: { marginLeft: 18, marginBottom: 50, flex: 1 },
+  descNama: { fontSize: 20, fontWeight: 'bold' },
+  descEmail: { fontSize: 16 },
+  descBidang: { fontSize: 12, marginTop: 8 },
+  Delete: { fontSize: 30, fontWeight: 'bold', color: 'red' }
+})
