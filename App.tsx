@@ -38,7 +38,7 @@ const App = () => {
       bidang,
     }
     if (button === 'Simpan') {
-      Axios.post('http://192.168.1.10:3004/users', data)
+      Axios.post('https://12jl4vc6-3004.asse.devtunnels.ms/users', data)
         .then(res => {
           console.log('res: ', res);
           setName("");
@@ -47,7 +47,7 @@ const App = () => {
           getData();
         })
     } else if (button === 'Update') {
-      Axios.put(`http://192.168.1.10:3004/users/${selectedUser.id}`, data)
+      Axios.put(`https://12jl4vc6-3004.asse.devtunnels.ms/users/${selectedUser.id}`, data)
         .then(res => {
           console.log('res Update: ', res);
           setName("");
@@ -60,7 +60,7 @@ const App = () => {
   }
 
   const getData = () => {
-    Axios.get('http://192.168.1.10:3004/users')
+    Axios.get('https://12jl4vc6-3004.asse.devtunnels.ms/users')
       .then(res => {
         setUsers(res.data);
       })
@@ -75,7 +75,7 @@ const App = () => {
   }
 
   const deleteItem = (item) => {
-    Axios.delete(`http://192.168.1.10:3004/users/${item.id}`)
+    Axios.delete(`https://12jl4vc6-3004.asse.devtunnels.ms/users/${item.id}`)
     getData();
   }
 
